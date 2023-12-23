@@ -1,21 +1,18 @@
+import { randomUUID } from 'crypto';
 import { InvoiceValue } from './invoice-value.entity';
 
 type InvoiceProps = {
   id: string;
-  company: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
   customer: string;
   instalation: string;
-  mounth: string;
+  month: string;
   due_date: Date;
   total_value: number;
+  nfe_key: string;
+  nfe_emission_date: Date;
+  nfe_authroization: number;
+  file_url: string;
   values: InvoiceValue[];
-  class: string;
-  sub_class: string;
-  modality: string;
 };
 
 export class Invoice {
@@ -25,28 +22,13 @@ export class Invoice {
     Object.assign(this, data);
   }
 
+  static create(data: Omit<InvoiceProps, 'id' | 'file_url'>): Invoice {
+    const id = randomUUID().toString();
+    return new Invoice({ ...data, id, file_url: '' });
+  }
+
   get id() {
     return this.props.id;
-  }
-
-  get company() {
-    return this.props.company;
-  }
-
-  get address() {
-    return this.props.address;
-  }
-
-  get city() {
-    return this.props.city;
-  }
-
-  get state() {
-    return this.props.state;
-  }
-
-  get zip() {
-    return this.props.zip;
   }
 
   get customer() {
@@ -57,8 +39,8 @@ export class Invoice {
     return this.props.instalation;
   }
 
-  get mounth() {
-    return this.props.mounth;
+  get month() {
+    return this.props.month;
   }
 
   get due_date() {
@@ -73,15 +55,15 @@ export class Invoice {
     return this.props.values;
   }
 
-  get class() {
-    return this.props.class;
+  get nfe_key() {
+    return this.props.nfe_key;
   }
 
-  get sub_class() {
-    return this.props.sub_class;
+  get nfe_emission_date() {
+    return this.props.nfe_emission_date;
   }
 
-  get modality() {
-    return this.props.modality;
+  get nfe_authroization() {
+    return this.props.nfe_authroization;
   }
 }

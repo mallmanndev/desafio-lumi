@@ -20,9 +20,9 @@ export class ReadInvoicesUseCase {
     const files = await this.filesService.listFiles(`./faturas/pending/`);
     if (files.length === 0) return;
 
-    for (const file of files) {
-      await this.filesService.parsePDF(`./faturas/pending/${file}`);
-    }
+    // for (const file of files) {
+    await this.filesService.parsePDF(`./faturas/pending/${files[0]}`);
+    // }
 
     console.log(files);
   }
