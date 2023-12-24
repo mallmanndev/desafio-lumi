@@ -8,9 +8,6 @@ type InvoiceProps = {
   month: string;
   due_date: Date;
   total_value: number;
-  nfe_key: string;
-  nfe_emission_date: Date;
-  nfe_authroization: number;
   file_url: string;
   values: InvoiceValue[];
 };
@@ -19,7 +16,7 @@ export class Invoice {
   private props: InvoiceProps;
 
   constructor(data: InvoiceProps) {
-    Object.assign(this, data);
+    this.props = data;
   }
 
   static create(data: Omit<InvoiceProps, 'id' | 'file_url'>): Invoice {
@@ -55,15 +52,7 @@ export class Invoice {
     return this.props.values;
   }
 
-  get nfe_key() {
-    return this.props.nfe_key;
-  }
-
-  get nfe_emission_date() {
-    return this.props.nfe_emission_date;
-  }
-
-  get nfe_authroization() {
-    return this.props.nfe_authroization;
+  get file_url() {
+    return this.props.file_url;
   }
 }

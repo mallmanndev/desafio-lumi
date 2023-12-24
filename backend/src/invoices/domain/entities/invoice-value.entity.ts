@@ -1,12 +1,15 @@
+export enum InvoiceValueType {
+  ENERGIA = 'ENERGIA',
+  ENERGIA_SEM_ICMS = 'ENERGIA_SEM_ICMS',
+  ENERGIA_COMPENSADA = 'ENERGIA_COMPENSADA',
+  CONTRIBUICAO_ILUMINACAO = 'CONTRIBUICAO_ILUMINACAO',
+}
+
 type InvoiceValueProps = {
-  name: string;
-  unit: 'kWh' | null;
+  type: InvoiceValueType;
   quantity: number;
+  price: number;
   value: number;
-  pis: number;
-  icms_calc_base: number;
-  icms_aliq: number;
-  icms: number;
   unit_fare: number;
 };
 
@@ -14,39 +17,27 @@ export class InvoiceValue {
   private props: InvoiceValueProps;
 
   constructor(data: InvoiceValueProps) {
-    Object.assign(this, data);
+    this.props = data;
   }
 
-  get name() {
-    return this.props.name;
+  static create(data: InvoiceValueProps): InvoiceValue {
+    return new InvoiceValue(data);
   }
 
-  get unit() {
-    return this.props.unit;
+  get type() {
+    return this.props.type;
   }
 
   get quantity() {
     return this.props.quantity;
   }
 
+  get price() {
+    return this.props.price;
+  }
+
   get value() {
     return this.props.value;
-  }
-
-  get pis() {
-    return this.props.pis;
-  }
-
-  get icms_calc_base() {
-    return this.props.icms_calc_base;
-  }
-
-  get icms_aliq() {
-    return this.props.icms_aliq;
-  }
-
-  get icms() {
-    return this.props.icms;
   }
 
   get unit_fare() {

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IFilesService } from '../../../invoices/domain/ports/files.service';
+import { IFilesService } from '../../domain/ports/files.service';
+import { IInvoicesRepository } from '../../domain/ports/invoices.repository';
 
 /**
  * @description
@@ -13,17 +14,24 @@ export class ReadInvoicesUseCase {
   constructor(
     @Inject('IFilesService')
     private readonly filesService: IFilesService,
+    @Inject('IInvoicesRepository')
+    private readonly invoicesRepository: IInvoicesRepository,
   ) {}
 
   async execute() {
-    console.log('Teste');
     const files = await this.filesService.listFiles(`./faturas/pending/`);
     if (files.length === 0) return;
 
-    // for (const file of files) {
-    await this.filesService.parsePDF(`./faturas/pending/${files[0]}`);
-    // }
+    for (const file of files) {
+      try {
+        const invoice = await this.filesService.parsePDF(
+          `./faturas/pending/${file}`,
+        );
 
-    console.log(files);
+        await this.invoicesRepository.save(invoice);
+      } catch (err) {
+        console.log(err);
+      }
+    }
   }
 }

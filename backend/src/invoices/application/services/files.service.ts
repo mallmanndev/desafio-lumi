@@ -1,8 +1,12 @@
 import * as fs from 'fs';
 import * as Pdf from 'pdf-parse';
-import { IFilesService } from '../../../invoices/domain/ports/files.service';
-import { parse } from 'date-fns';
+import { IFilesService } from '../../domain/ports/files.service';
 import { Invoice } from '../../../invoices/domain/entities/invoice.entity';
+import {
+  InvoiceValue,
+  InvoiceValueType,
+} from '../../../invoices/domain/entities/invoice-value.entity';
+import { parse } from 'date-fns';
 
 const PdfTyped = Pdf as any;
 
@@ -22,17 +26,19 @@ export class FilesService implements IFilesService {
         customer: '',
         instalation: '',
         month: '',
-        due_date: null,
+        due_date: new Date(),
         total_value: 0,
-        nfe_key: '',
-        nfe_emission_date: null,
+        nfe_emission_date: new Date(),
         nfe_authroization: 0,
+        nfe_key: '',
       };
       const dataBuffer = fs.readFileSync(path);
       const data = await PdfTyped(dataBuffer);
 
       const lines = data.text.split('\n');
       const nonEmptyLines = lines.filter((line) => line.trim() !== '');
+
+      const values = [];
 
       for (const i in nonEmptyLines) {
         const line = nonEmptyLines[i];
@@ -58,7 +64,6 @@ export class FilesService implements IFilesService {
 
         if (line.includes('Data de emissão')) {
           const emissionDate = this.removeWhitespaces(line).split(': ')[1];
-          console.log(emissionDate);
           pdfData.nfe_emission_date = parse(
             emissionDate,
             'dd/MM/yyyy',
@@ -76,9 +81,61 @@ export class FilesService implements IFilesService {
           const key = nonEmptyLines[nIndex];
           pdfData.nfe_key = key;
         }
+
+        if (line.includes('Energia ElétricakWh')) {
+          const arr = this.removeWhitespaces(line).split(' ');
+          values.push(
+            InvoiceValue.create({
+              type: InvoiceValueType.ENERGIA,
+              quantity: parseInt(arr[2]),
+              price: parseFloat(arr[3].replace(',', '.')),
+              value: parseFloat(arr[4].replace(',', '.')),
+              unit_fare: parseFloat(arr[5].replace(',', '.')),
+            }),
+          );
+        }
+
+        if (line.includes('Energia SCEE s/ ICMSkWh')) {
+          const arr = this.removeWhitespaces(line).split(' ');
+          values.push(
+            InvoiceValue.create({
+              type: InvoiceValueType.ENERGIA_SEM_ICMS,
+              quantity: parseInt(arr[4]),
+              price: parseFloat(arr[5].replace(',', '.')),
+              value: parseFloat(arr[6].replace(',', '.')),
+              unit_fare: parseFloat(arr[7].replace(',', '.')),
+            }),
+          );
+        }
+
+        if (line.includes('Energia compensada')) {
+          const arr = this.removeWhitespaces(line).split(' ');
+          values.push(
+            InvoiceValue.create({
+              type: InvoiceValueType.ENERGIA_COMPENSADA,
+              quantity: parseInt(arr[4]),
+              price: parseFloat(arr[5].replace(',', '.')),
+              value: parseFloat(arr[6].replace(',', '.')),
+              unit_fare: parseFloat(arr[7].replace(',', '.')),
+            }),
+          );
+        }
+
+        if (line.includes('Contrib Ilum Publica Municipal')) {
+          const arr = this.removeWhitespaces(line).split(' ');
+          values.push(
+            InvoiceValue.create({
+              type: InvoiceValueType.CONTRIBUICAO_ILUMINACAO,
+              quantity: 0,
+              price: 0,
+              value: parseFloat(arr[4].replace(',', '.')),
+              unit_fare: 0,
+            }),
+          );
+        }
       }
 
-      return Invoice.create({ ...pdfData, values: [] });
+      return Invoice.create({ ...pdfData, values: values });
     } catch (error) {
       console.error('Erro ao extrair dados do PDF:', error);
     }
