@@ -9,3 +9,60 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum InvoiceValueType {
+  ENERGIA
+  ENERGIA_SEM_ICMS
+  ENERGIA_COMPENSADA
+  CONTRIBUICAO_ILUMINACAO
+}
+
+model InvoiceValue {
+  invoice_id String
+  type       InvoiceValueType
+  quantity   Int
+  price      Float
+  value      Float
+  unit_fare  Float
+  created_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt
+  deleted_at DateTime         @default(now())
+
+  invoice Invoice @relation(fields: [invoice_id], references: [id])
+
+  @@id([invoice_id, type])
+  @@map("invoice_values")
+}
+
+model InvoiceNfe {
+  number        String   @id
+  invoice_id    String   @unique
+  key           String
+  emission_date DateTime
+  authorization Int
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  deleted_at    DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoice_id], references: [id])
+
+  @@map("invoice_nfe")
+}
+
+model Invoice {
+  id          String   @id @default(uuid())
+  customer    String
+  instalation String
+  month       String
+  due_date    DateTime
+  total_value Float
+  file_url    String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  deleted_at  DateTime @default(now())
+
+  values InvoiceValue[]
+  nfe    InvoiceNfe?
+
+  @@map("invoices")
+}
