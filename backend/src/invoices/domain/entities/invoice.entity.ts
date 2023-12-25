@@ -24,6 +24,10 @@ export class Invoice {
     return new Invoice({ ...data, id, file_url: '' });
   }
 
+  public changeFileUrl(file_url: string): void {
+    this.props.file_url = file_url;
+  }
+
   get id() {
     return this.props.id;
   }

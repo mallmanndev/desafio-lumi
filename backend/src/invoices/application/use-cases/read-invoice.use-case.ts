@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IFilesService } from '../../domain/ports/files.service';
 import { IInvoicesRepository } from '../../domain/ports/invoices.repository';
 
@@ -11,6 +11,8 @@ import { IInvoicesRepository } from '../../domain/ports/invoices.repository';
  */
 @Injectable()
 export class ReadInvoicesUseCase {
+  private readonly logger = new Logger(ReadInvoicesUseCase.name);
+
   constructor(
     @Inject('IFilesService')
     private readonly filesService: IFilesService,
@@ -20,17 +22,24 @@ export class ReadInvoicesUseCase {
 
   async execute() {
     const files = await this.filesService.listFiles(`./faturas/pending/`);
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      this.logger.debug('Não há faturas para importar');
+      return;
+    }
 
     for (const file of files) {
       try {
         const invoice = await this.filesService.parsePDF(
           `./faturas/pending/${file}`,
         );
-
+        invoice.changeFileUrl(`faturas/processed/${file}`);
         await this.invoicesRepository.save(invoice);
+        await this.filesService.move(
+          `./faturas/pending/${file}`,
+          `./faturas/processed/${file}`,
+        );
       } catch (err) {
-        console.log(err);
+        this.logger.error('Não foi possível importar fatura', err);
       }
     }
   }

@@ -64,5 +64,6 @@ model Invoice {
   values InvoiceValue[]
   nfe    InvoiceNfe?
 
+  @@unique([customer, instalation, month])
   @@map("invoices")
 }

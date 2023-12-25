@@ -6,9 +6,16 @@ import { TaskModule } from './tasks/task.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
   imports: [
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      playground: true,
+      autoSchemaFile: true,
+    }),
     ConfigModule.forRoot(),
     ScheduleModule.forRoot(),
     PrismaModule,

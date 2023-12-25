@@ -141,6 +141,10 @@ export class FilesService implements IFilesService {
     }
   }
 
+  async move(path: string, newPath: string): Promise<void> {
+    await fs.renameSync(path, newPath);
+  }
+
   private removeWhitespaces(text: string): string {
     return text.replace(/\s{2,}/g, ' ').trim();
   }

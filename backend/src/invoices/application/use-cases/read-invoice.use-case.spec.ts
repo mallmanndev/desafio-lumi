@@ -14,6 +14,7 @@ describe('ReadInvoiceUseCase', () => {
     const filesService = {
       listFiles: jest.fn().mockResolvedValue([]),
       parsePDF: jest.fn().mockResolvedValue(''),
+      move: jest.fn(),
     };
     const readInvoiceUseCase = new ReadInvoicesUseCase(
       filesService,
@@ -29,6 +30,7 @@ describe('ReadInvoiceUseCase', () => {
     const filesService = {
       listFiles: jest.fn().mockResolvedValue(['test.pdf']),
       parsePDF: jest.fn().mockRejectedValue('Error'),
+      move: jest.fn(),
     };
     const readInvoiceUseCase = new ReadInvoicesUseCase(
       filesService,
@@ -56,6 +58,7 @@ describe('ReadInvoiceUseCase', () => {
     const filesService = {
       listFiles: jest.fn().mockResolvedValue(['test.pdf']),
       parsePDF: jest.fn().mockResolvedValue(invoice),
+      move: jest.fn(),
     };
     const readInvoiceUseCase = new ReadInvoicesUseCase(
       filesService,
@@ -70,5 +73,12 @@ describe('ReadInvoiceUseCase', () => {
     );
     expect(invoicesRepository.save).toHaveBeenCalledTimes(1);
     expect(invoicesRepository.save).toHaveBeenCalledWith(invoice);
+    expect(filesService.move).toHaveBeenCalledTimes(1);
+    expect(filesService.move).toHaveBeenCalledWith(
+      './faturas/pending/test.pdf',
+      './faturas/processed/test.pdf',
+    );
+
+    expect(invoice.file_url).toBe('faturas/processed/test.pdf');
   });
 });

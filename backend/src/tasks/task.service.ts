@@ -10,6 +10,7 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_30_SECONDS)
   async handleCron() {
+    this.logger.debug('Importando faturas...');
     await this.readInvoiceUseCase.execute();
   }
 }
